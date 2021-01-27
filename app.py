@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-import time
 import pyautogui
 import threading
 
@@ -13,8 +12,7 @@ class Application():
 
         self.style = Style()
 
-        self.cardframe_list = []
-        self.cardframe_type_list = []
+        self.cardframe_list = {}
 
         self.master = master
         self.master.configure(bg=self.style.navbar_color)
@@ -60,8 +58,6 @@ class Application():
         self.stop_button.bind("<ButtonRelease-1>", self.teste)
         self.stop_button.pack(side=RIGHT)
 
-        self.tasks = []
-
     def add_cardframe_mouse(self, event=None):
 
         card_frame = Frame(self.content_frame, height=60, width=240,
@@ -100,8 +96,8 @@ class Application():
         delete_button.bind("<ButtonRelease-1>", self.delete_cardframe)
         delete_button.pack(side=RIGHT)
 
-        self.cardframe_list.append(card_frame)
-        self.cardframe_type_list.append('click')
+        frame_dict = {str(card_frame): {'frame': card_frame, 'type': 'click'}}
+        self.cardframe_list.update(frame_dict)
 
     def pos_mouse_track(self, event=None):
 
@@ -147,8 +143,8 @@ class Application():
         delete_button.bind("<ButtonRelease-1>", self.delete_cardframe)
         delete_button.pack(side=RIGHT)
 
-        self.cardframe_list.append(card_frame)
-        self.cardframe_type_list.append('sleep')
+        frame_dict = {str(card_frame): {'frame': card_frame, 'type': 'sleep'}}
+        self.cardframe_list.update(frame_dict)
 
     def add_cardframe_keyboard(self, event=None):
 
@@ -171,31 +167,34 @@ class Application():
         delete_button.bind("<ButtonRelease-1>", self.delete_cardframe)
         delete_button.pack(side=RIGHT)
 
-        self.cardframe_list.append(card_frame)
-        self.cardframe_type_list.append('keyboard')
+        frame_dict = {str(card_frame): {
+            'frame': card_frame, 'type': 'keyboard'}}
+        self.cardframe_list.update(frame_dict)
 
     def delete_cardframe(self, event=None):
+
         widget_call = event.widget
         cardframe_reference = widget_call.winfo_parent()
 
-        for x in self.cardframe_list:
-            if str(x) == cardframe_reference:
+        for cardframe_id, cardframe in self.cardframe_list.items():
+            if cardframe_id == cardframe_reference:
 
-                self.cardframe_list.remove(x)
-
-                x.destroy()
+                self.cardframe_list.pop(cardframe_id)
+                cardframe['frame'].destroy()
+                break
 
     def play(self, event):
 
-        self.status_label.configure(text="Processing....")
+        # self.status_label.configure(text="Processing....")
 
         self.tasks = {}
 
         y = 0
-        for x in self.cardframe_list:
-            widget_childs = x.slaves()
+        for frame_id, frame_propety in self.cardframe_list.items():
 
-            if self.cardframe_type_list[y] == 'click':
+            widget_childs = frame_propety['frame'].slaves()
+
+            if frame_propety['type'] == 'click':
 
                 y += 1
 
@@ -207,7 +206,7 @@ class Application():
 
                 self.tasks.update(z)
 
-            elif self.cardframe_type_list[y] == 'sleep':
+            elif frame_propety['type'] == 'sleep':
                 y += 1
 
                 type_time = widget_childs[2].get()
@@ -227,7 +226,7 @@ class Application():
 
                 self.tasks.update(z)
 
-            elif self.cardframe_type_list[y] == 'keyboard':
+            elif frame_propety['type'] == 'keyboard':
                 y += 1
 
                 text_entry = widget_childs[2].get()
@@ -245,7 +244,7 @@ class Application():
         self.status_label.configure(text="Finished")
 
     def teste(self, event):
-        print(self.cardframe_type_list)
+        print(self.cardframe_list)
 
 
 if __name__ == "__main__":
