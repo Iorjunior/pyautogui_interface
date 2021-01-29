@@ -1,2 +1,3 @@
 # pyautogui_interface
-A Simple intarface for Pyautogui with Tkinter 
+A Simple interface for **Pyautogui** with **Tkinter** 
+
