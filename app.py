@@ -172,8 +172,6 @@ class Application():
 
     def put_mouse_pos(self, widget, pos):
 
-        print(widget, pos)
-
         widget_call = widget
         cardframe_reference = widget_call.winfo_parent()
 
@@ -196,7 +194,7 @@ class Application():
 
     def play(self, event):
 
-        # self.status_label.configure(text="Processing....")
+        self.status_label.configure(text="Processing....")
 
         self.tasks = {}
 
@@ -304,7 +302,7 @@ if __name__ == "__main__":
     root = Tk()
 
     app = Application(root)
-    root.title('Task Automation')
-    root.iconbitmap(f'icons/time.png')
-    root.geometry('280x500')
+    root.title('Automation')
+    root.iconbitmap(f'icons/time.ico')
+    root.geometry('290x500')
     root.mainloop()
