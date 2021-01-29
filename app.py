@@ -8,7 +8,7 @@ from interpreter import Interpreter
 
 
 class Application():
-    def __init__(self, master):
+    def __init__(self, master=None):
 
         self.style = Style()
 
@@ -87,8 +87,8 @@ class Application():
         pos_y_entry.insert(0, '0')
 
         get_pos_button = Button(card_frame, image=self.style.select_icon,
-                                cursor='circle', relief=FLAT, bg=self.style.card_color)
-        get_pos_button.bind("<ButtonRelease-1>", self.pos_mouse_track)
+                                relief=FLAT, bg=self.style.card_color)
+        get_pos_button.bind("<ButtonRelease-1>", self.track_mouse)
         get_pos_button.pack(side=LEFT, padx=2)
 
         delete_button = Button(
@@ -98,27 +98,6 @@ class Application():
 
         frame_dict = {str(card_frame): {'frame': card_frame, 'type': 'click'}}
         self.cardframe_list.update(frame_dict)
-
-    def pos_mouse_track(self, event=None):
-
-        widget = event.widget
-        widget_parent = widget.winfo_parent()
-
-        for x in self.cardframe_list:
-            if str(x) == widget_parent:
-
-                widget_childs = x.slaves()
-
-                pos_x_entry = widget_childs[3]
-                pos_y_entry = widget_childs[5]
-
-                mouse_x, mouse_y = pyautogui.position()
-
-                pos_x_entry.delete(0, END)
-                pos_x_entry.insert(0, mouse_x)
-
-                pos_y_entry.delete(0, END)
-                pos_y_entry.insert(0, mouse_y)
 
     def add_cardframe_time(self, event=None):
 
@@ -183,6 +162,38 @@ class Application():
                 cardframe['frame'].destroy()
                 break
 
+    def track_mouse(self, event=None):
+
+        widget = event.widget
+        trackmouse_topleve = Toplevel(self.master)
+        app = Track_Mouse(trackmouse_topleve)
+        app.tk_reference.wait_window()
+        self.put_mouse_pos(widget, app.pos)
+
+    def put_mouse_pos(self, widget, pos):
+
+        print(widget, pos)
+
+        widget_call = widget
+        cardframe_reference = widget_call.winfo_parent()
+
+        for cardframe_id, cardframe in self.cardframe_list.items():
+            if cardframe_id == cardframe_reference:
+
+                widget_childs = cardframe['frame'].slaves()
+
+                pos_x_entry = widget_childs[3]
+                pos_y_entry = widget_childs[5]
+
+                mouse_x, mouse_y = pos
+
+                pos_x_entry.delete(0, END)
+                pos_x_entry.insert(0, mouse_x)
+
+                pos_y_entry.delete(0, END)
+                pos_y_entry.insert(0, mouse_y)
+                break
+
     def play(self, event):
 
         # self.status_label.configure(text="Processing....")
@@ -243,8 +254,50 @@ class Application():
 
         self.status_label.configure(text="Finished")
 
-    def teste(self, event):
+    def teste(self, event=None):
         print(self.cardframe_list)
+
+
+class Track_Mouse():
+    def __init__(self, tk_reference):
+
+        self.tk_reference = tk_reference
+
+        self.tk_reference.overrideredirect(1)
+        self.tk_reference.wm_attributes('-transparentcolor', 'yellow')
+        self.tk_reference.attributes("-topmost", True)
+
+        self.tk_reference.bind("<Escape>", self.safe_quit)
+
+        self.screenWidth, self.screenHeight = pyautogui.size()
+
+        self.canvas_total = Canvas(
+            self.tk_reference, width=self.screenWidth, height=self.screenHeight, bg='yellow')
+        self.canvas_total.bind("<Button-1>", self.get_mouse_pos)
+        self.canvas_total.pack()
+
+        self.draw_lines()
+
+    def draw_lines(self):
+        x, y = pyautogui.position()
+
+        self.canvas_total.delete("all")
+
+        self.canvas_total.create_line(
+            0, y, self.screenWidth, y, fill="red", width=2)
+
+        self.canvas_total.create_line(
+            x, 0, x, self.screenHeight, fill="red", width=2)
+
+        self.tk_reference.after(20, self.draw_lines)
+
+    def get_mouse_pos(self, event):
+        pos = (event.x, event.y)
+        self.safe_quit(pos=pos)
+
+    def safe_quit(self, event=None, pos=None):
+        self.tk_reference.destroy()
+        self.pos = pos
 
 
 if __name__ == "__main__":
